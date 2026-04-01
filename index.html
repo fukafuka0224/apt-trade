@@ -220,9 +220,7 @@ var BASE = 'https://apis.data.go.kr/1613000/RTMSDataSvcAptTrade/getRTMSDataSvcAp
 function buildUrl(lawdCd, ym, pageNo) {
   return BASE+'?serviceKey='+API_KEY+'&LAWD_CD='+lawdCd+'&DEAL_YMD='+ym+'&numOfRows=1000&pageNo='+pageNo+'&_type=json';
 }
-function buildDiagUrl() {
-  return BASE+'?serviceKey='+API_KEY+'&LAWD_CD=11680&DEAL_YMD=202501&numOfRows=1&pageNo=1&_type=json';
-}
+
 
 var LAWD = {
   '11':{'강남구':'11680','강동구':'11740','강북구':'11305','강서구':'11500','관악구':'11620','광진구':'11215','구로구':'11530','금천구':'11545','노원구':'11350','도봉구':'11320','동대문구':'11230','동작구':'11590','마포구':'11440','서대문구':'11410','서초구':'11650','성동구':'11200','성북구':'11290','송파구':'11710','양천구':'11470','영등포구':'11560','용산구':'11170','은평구':'11380','종로구':'11110','중구':'11140','중랑구':'11260'},
@@ -254,36 +252,18 @@ function setMsg(id,m){document.getElementById(id+'msg').textContent=m;}
 
 function runDiag(){
   API_KEY = localStorage.getItem('apt_api_key') || '';
-  setDot('d1','sp'); setMsg('d1','API 서버 연결 확인 중...');
+  if(!API_KEY){
+    document.getElementById('diagBox').style.display='none';
+    return;
+  }
+  // 진단 없이 키가 있으면 바로 정상으로 표시 후 닫기
+  // (실제 API 오류는 조회 시점에 에러 메시지로 표시됨)
+  setDot('d1','ok'); setMsg('d1','✅ API 키 설정 완료');
   document.getElementById('d2row').style.display='none';
   document.getElementById('d3row').style.display='none';
-
-  var url=buildDiagUrl();
-  fetch(url)
-    .then(function(r){return r.json();})
-    .then(function(j){
-      setDot('d1','ok'); setMsg('d1','✅ API 서버 연결 성공');
-      document.getElementById('d2row').style.display='flex';
-      setDot('d2','sp'); setMsg('d2','API 키 인증 확인 중...');
-      var rc=j&&j.response&&j.response.header&&j.response.header.resultCode;
-      var rm=j&&j.response&&j.response.header&&j.response.header.resultMsg||'';
-      if(rc && rc!=='00' && rc!=='000'){
-        setDot('d2','fail'); setMsg('d2','❌ 인증 오류 ['+rc+']: '+rm);
-        document.getElementById('dkrow').style.display='flex';
-        return;
-      }
-      setDot('d2','ok'); setMsg('d2','✅ API 키 인증 성공');
-      document.getElementById('d3row').style.display='flex';
-      setDot('d3','sp'); setMsg('d3','데이터 응답 확인 중...');
-      var total=parseInt((j&&j.response&&j.response.body&&j.response.body.totalCount)||'0');
-      setDot('d3','ok');
-      setMsg('d3', total>0 ? '✅ 정상 (강남구 2025.01: '+total+'건)' : '✅ API 정상');
-      setTimeout(function(){document.getElementById('diagBox').style.display='none';},2000);
-    })
-    .catch(function(e){
-      setDot('d1','fail'); setMsg('d1','❌ 연결 실패: '+e.message);
-      document.getElementById('dkrow').style.display='flex';
-    });
+  setTimeout(function(){
+    document.getElementById('diagBox').style.display='none';
+  }, 1500);
 }
 
 // ── API 호출 ─────────────────────────────────────────
