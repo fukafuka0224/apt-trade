@@ -253,8 +253,7 @@ function setDot(id,c){document.getElementById(id+'dot').className='dot '+c;}
 function setMsg(id,m){document.getElementById(id+'msg').textContent=m;}
 
 function runDiag(){
-  var ck=document.getElementById('ckey').value.trim();
-  if(ck) API_KEY=ck;
+  API_KEY = localStorage.getItem('apt_api_key') || '';
   setDot('d1','sp'); setMsg('d1','API 서버 연결 확인 중...');
   document.getElementById('d2row').style.display='none';
   document.getElementById('d3row').style.display='none';
