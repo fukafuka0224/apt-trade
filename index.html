@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아파트 실거래가 조회</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e1a;--sf:#111827;--sf2:#1a2235;--bd:#1e2d45;--ac:#3b82f6;--ac2:#06b6d4;--ac3:#f59e0b;--tx:#e2e8f0;--mu:#64748b;--dm:#94a3b8;--gn:#10b981;--rd:#ef4444;--r:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-serif;min-height:100vh;padding:20px;}
+.hd{text-align:center;margin-bottom:24px;padding:32px 20px 24px;position:relative;}
+.hd::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:180px;background:radial-gradient(ellipse,rgba(59,130,246,.12) 0%,transparent 70%);pointer-events:none;}
+.badge{display:inline-block;background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(6,182,212,.15));border:1px solid rgba(59,130,246,.3);color:var(--ac2);font-size:11px;font-weight:700;letter-spacing:3px;padding:4px 13px;border-radius:20px;margin-bottom:12px;text-transform:uppercase;}
+h1{font-size:clamp(20px,4vw,36px);font-weight:900;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px;margin-bottom:6px;}
+.hsub{color:var(--mu);font-size:13px;}
+.diag{max-width:980px;margin:0 auto 18px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:var(--r);padding:14px 18px;}
+.dtitle{font-size:12px;font-weight:700;color:var(--ac3);margin-bottom:8px;letter-spacing:1px;}
+.drow{display:flex;align-items:center;gap:10px;font-size:13px;margin-bottom:6px;}
+.drow:last-child{margin-bottom:0;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mu);flex-shrink:0;}
+.dot.ok{background:var(--gn);}.dot.fail{background:var(--rd);}.dot.sp{background:var(--ac3);animation:pu 1s infinite;}
+@keyframes pu{0%,100%{opacity:1;}50%{opacity:.3;}}
+.dbtn{margin-left:auto;padding:4px 12px;border-radius:6px;border:1px solid var(--ac3);background:transparent;color:var(--ac3);font-size:12px;cursor:pointer;font-family:inherit;}
+.panel{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:22px;max-width:980px;margin:0 auto 20px;}
+.ptitle{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--ac);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.ptitle::before{content:'';width:3px;height:13px;background:var(--ac);border-radius:2px;}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:13px;margin-bottom:16px;}
+.fi{display:flex;flex-direction:column;gap:5px;}
+.fi label{font-size:11px;font-weight:600;color:var(--mu);letter-spacing:1px;text-transform:uppercase;}
+.fi select,.fi input{background:var(--sf2);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-family:inherit;font-size:14px;padding:9px 11px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none;}
+.fi select:focus,.fi input:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(59,130,246,.15);}
+select option{background:#1a2235;}
+hr.dv{border:none;border-top:1px solid var(--bd);margin:14px 0;}
+.flbl{font-size:11px;font-weight:600;color:var(--mu);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+.brow{display:flex;gap:9px;justify-content:flex-end;margin-top:4px;}
+.btn{padding:9px 24px;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+.btnp{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;}
+.btnp:hover{opacity:.88;transform:translateY(-1px);}
+.btnp:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.btnr{background:transparent;border:1px solid var(--bd);color:var(--dm);}
+.btnr:hover{border-color:var(--dm);}
+.sbar{max-width:980px;margin:0 auto 12px;display:flex;align-items:center;gap:9px;font-size:13px;color:var(--mu);min-height:20px;}
+.spin{width:14px;height:14px;border:2px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:sp .7s linear infinite;display:none;}
+.spin.on{display:block;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.emsg{max-width:980px;margin:0 auto 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:10px 15px;font-size:13px;display:none;}
+.sr{max-width:980px;margin:0 auto 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:13px 15px;}
+.sl{font-size:10px;color:var(--mu);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
+.sv{font-size:17px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--tx);}
+.sv.up{color:var(--rd);}.sv.dn{color:var(--gn);}.sv.df{color:var(--ac3);}
+.tout{max-width:980px;margin:0 auto;}
+.tbtns{display:flex;border-bottom:1px solid var(--bd);}
+.tbtn{padding:9px 20px;font-size:13px;font-weight:600;color:var(--mu);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .2s;margin-bottom:-1px;font-family:inherit;}
+.tbtn.on{color:var(--ac);border-bottom-color:var(--ac);}
+.tw{background:var(--sf);border:1px solid var(--bd);border-top:none;border-radius:0 0 var(--r) var(--r);overflow:hidden;}
+.th2{padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.ttl{font-size:13px;font-weight:600;color:var(--dm);}
+.cbdg{background:rgba(59,130,246,.15);color:var(--ac);font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;font-family:'JetBrains Mono',monospace;}
+.tsc{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--sf2);padding:9px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--mu);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:hover{color:var(--dm);}
+thead th.S{color:var(--ac);}
+tbody tr{border-bottom:1px solid rgba(30,45,69,.6);transition:background .15s;}
+tbody tr:hover{background:rgba(59,130,246,.05);}
+tbody td{padding:9px 12px;color:var(--tx);white-space:nowrap;}
+td.n{font-family:'JetBrains Mono',monospace;text-align:right;}
+td.p{color:var(--ac3);font-weight:600;font-family:'JetBrains Mono',monospace;text-align:right;}
+td.py{background:rgba(6,182,212,.07);color:var(--ac2);font-weight:700;font-family:'JetBrains Mono',monospace;text-align:center;}
+td.mn{color:var(--gn);font-weight:700;font-family:'JetBrains Mono',monospace;text-align:right;}
+td.mx{color:var(--rd);font-weight:700;font-family:'JetBrains Mono',monospace;text-align:right;}
+td.df{color:var(--ac3);font-weight:700;font-family:'JetBrains Mono',monospace;text-align:right;}
+td.ct{color:var(--dm);font-family:'JetBrains Mono',monospace;text-align:right;}
+.pr{color:var(--mu);font-size:11px;font-weight:400;margin-left:4px;}
+.apt-link{color:var(--ac);cursor:pointer;text-decoration:none;border-bottom:1px dashed var(--ac);transition:color .15s;}
+.apt-link:hover{color:var(--ac2);border-bottom-color:var(--ac2);}
+.naver-ico{font-size:10px;margin-left:4px;opacity:.7;}
+.pgn{display:flex;align-items:center;gap:4px;justify-content:center;padding:12px;border-top:1px solid var(--bd);flex-wrap:wrap;}
+.pb{min-width:28px;height:28px;border-radius:5px;border:1px solid var(--bd);background:transparent;color:var(--dm);font-size:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;padding:0 5px;font-family:'JetBrains Mono',monospace;}
+.pb:hover{border-color:var(--ac);color:var(--ac);}
+.pb.on{background:var(--ac);border-color:var(--ac);color:#fff;}
+</style>
+</head>
+<body>
+<div class="hd">
+  <div class="badge">국토교통부 실거래가 공개시스템</div>
+  <h1>아파트 매매 실거래가 조회</h1>
+  <p class="hsub">국토부 실거래가 API · 공급면적 기준 평형 분석</p>
+</div>
+
+<!-- API 키 입력 모달 -->
+<div id="keyModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:32px;width:90%;max-width:440px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:32px;margin-bottom:12px;">🔑</div>
+      <div style="font-size:18px;font-weight:700;color:var(--tx);margin-bottom:6px;">API 키 설정</div>
+      <div style="font-size:13px;color:var(--mu);line-height:1.6;">공공데이터포털에서 발급받은<br>아파트 실거래가 API 인증키를 입력하세요.<br>키는 이 기기에만 저장됩니다.</div>
+    </div>
+    <input id="modalKey" type="text" placeholder="API 인증키 입력"
+      style="width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-family:inherit;font-size:14px;padding:12px;outline:none;margin-bottom:12px;box-sizing:border-box;">
+    <div id="modalErr" style="color:#fca5a5;font-size:12px;margin-bottom:12px;display:none;"></div>
+    <button onclick="saveKey()" style="width:100%;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;">저장 후 시작</button>
+  </div>
+</div>
+
+<!-- 진단 바 -->
+<div class="diag" id="diagBox">
+  <div class="dtitle">🔧 API 연결 상태</div>
+  <div class="drow"><div class="dot sp" id="d1dot"></div><span id="d1msg">연결 확인 중...</span></div>
+  <div class="drow" id="d2row" style="display:none"><div class="dot sp" id="d2dot"></div><span id="d2msg"></span></div>
+  <div class="drow" id="d3row" style="display:none"><div class="dot sp" id="d3dot"></div><span id="d3msg"></span></div>
+  <div class="drow" style="margin-top:4px;">
+    <span style="font-size:12px;color:var(--mu);">🔑 API 키 저장됨</span>
+    <button class="dbtn" onclick="showKeyModal()" style="margin-left:8px;">키 변경</button>
+    <button class="dbtn" onclick="runDiag()" style="margin-left:4px;">재진단</button>
+    <button class="dbtn" onclick="clearKey()" style="margin-left:4px;border-color:var(--rd);color:var(--rd);">키 삭제</button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="ptitle">조회 조건</div>
+  <div class="fg">
+    <div class="fi"><label>시도 *</label>
+      <select id="sido" onchange="loadSgg()">
+        <option value="">시도 선택</option>
+        <option value="11">서울특별시</option><option value="26">부산광역시</option>
+        <option value="27">대구광역시</option><option value="28">인천광역시</option>
+        <option value="29">광주광역시</option><option value="30">대전광역시</option>
+        <option value="31">울산광역시</option><option value="36">세종특별자치시</option>
+        <option value="41">경기도</option><option value="42">강원특별자치도</option>
+        <option value="43">충청북도</option><option value="44">충청남도</option>
+        <option value="45">전북특별자치도</option><option value="46">전라남도</option>
+        <option value="47">경상북도</option><option value="48">경상남도</option>
+        <option value="50">제주특별자치도</option>
+      </select>
+    </div>
+    <div class="fi" id="sggW" style="display:none"><label>시군구</label><select id="sgg"><option value="">전체</option></select></div>
+    <div class="fi"><label>시작 년월 *</label><input type="month" id="sYM"></div>
+    <div class="fi"><label>종료 년월 *</label><input type="month" id="eYM"></div>
+  </div>
+  <hr class="dv">
+  <div class="flbl">🔍 추가 필터 (선택)</div>
+  <div class="fg">
+    <div class="fi"><label>최소 전용면적(㎡)</label><input type="number" id="minA" placeholder="예: 60" min="0"></div>
+    <div class="fi"><label>최대 전용면적(㎡)</label><input type="number" id="maxA" placeholder="예: 135" min="0"></div>
+    <div class="fi"><label>최소 거래금액(만원)</label><input type="number" id="minP" placeholder="예: 30000" min="0"></div>
+    <div class="fi"><label>최대 거래금액(만원)</label><input type="number" id="maxP" placeholder="예: 100000" min="0"></div>
+    <div class="fi"><label>아파트명</label><input type="text" id="aptKw" placeholder="예: 래미안"></div>
+  </div>
+  <div class="brow">
+    <button class="btn btnr" onclick="resetAll()">초기화</button>
+    <button class="btn btnp" id="searchBtn" onclick="doSearch()">조회하기</button>
+  </div>
+</div>
+
+<div class="emsg" id="emsg"></div>
+<div class="sbar"><div class="spin" id="spin"></div><span id="stxt">조회 조건을 입력하고 조회하기를 클릭하세요.</span></div>
+
+<div class="sr" id="sr" style="display:none">
+  <div class="sc"><div class="sl">총 거래건수</div><div class="sv" id="sv1">-</div></div>
+  <div class="sc"><div class="sl">평균 거래가</div><div class="sv" id="sv2">-</div></div>
+  <div class="sc"><div class="sl">최고 거래가</div><div class="sv up" id="sv3">-</div></div>
+  <div class="sc"><div class="sl">최저 거래가</div><div class="sv dn" id="sv4">-</div></div>
+  <div class="sc"><div class="sl">최고-최저 차액</div><div class="sv df" id="sv5">-</div></div>
+  <div class="sc"><div class="sl">평형 종류</div><div class="sv" id="sv6">-</div></div>
+</div>
+
+<div class="tout" id="tout" style="display:none">
+  <div class="tbtns">
+    <button class="tbtn on" id="tb1" onclick="showTab(1)">🏢 단지별 분석</button>
+    <button class="tbtn" id="tb2" onclick="showTab(2)">📋 거래 내역</button>
+  </div>
+  <div id="t1">
+    <div class="tw">
+      <div class="th2"><span class="ttl">단지별 평형 분석 (아파트명 클릭 → 네이버지도)</span><span class="cbdg" id="cb1">0개 단지</span></div>
+      <div class="tsc"><table>
+        <thead><tr>
+          <th id="q0" onclick="s3('aptName')">아파트명</th>
+          <th id="q1" onclick="s3('dong')">법정동</th>
+          <th id="q2" onclick="s3('pyeong')">평형</th>
+          <th id="q3" onclick="s3('cnt')">거래건수</th>
+          <th id="q4" onclick="s3('min')">최저금액</th>
+          <th id="q5" onclick="s3('max')">최고금액</th>
+          <th id="q6" onclick="s3('diff')">차이금액</th>
+          <th id="q7" onclick="s3('diffPct')">차이비율</th>
+          <th id="q8" onclick="s3('avg')">평균금액</th>
+        </tr></thead>
+        <tbody id="tb3b"></tbody>
+      </table></div>
+      <div class="pgn" id="pg3"></div>
+    </div>
+  </div>
+  <div id="t2" style="display:none">
+    <div class="tw">
+      <div class="th2"><span class="ttl">실거래 내역</span><span class="cbdg" id="cb2">0건</span></div>
+      <div class="tsc"><table>
+        <thead><tr>
+          <th id="h0" onclick="s1('dealDate')">거래일자</th>
+          <th id="h1" onclick="s1('aptName')">아파트명</th>
+          <th id="h2" onclick="s1('dong')">법정동</th>
+          <th id="h3" onclick="s1('area')">전용면적(㎡)</th>
+          <th id="h4" onclick="s1('pyeong')">평형</th>
+          <th id="h5" onclick="s1('floor')">층</th>
+          <th id="h6" onclick="s1('price')">거래금액(만원)</th>
+          <th id="h7" onclick="s1('buildYear')">건축년도</th>
+        </tr></thead>
+        <tbody id="tb2b"></tbody>
+      </table></div>
+      <div class="pgn" id="pg2"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var API_KEY = localStorage.getItem('apt_api_key') || '';
+var BASE = 'https://apis.data.go.kr/1613000/RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade';
+// CORS 우회: 브라우저에서 직접 호출시 csp_report/CORS 오류 발생 → 프록시 경유
+function buildUrl(lawdCd, ym, pageNo) {
+  return BASE+'?serviceKey='+API_KEY+'&LAWD_CD='+lawdCd+'&DEAL_YMD='+ym+'&numOfRows=1000&pageNo='+pageNo+'&_type=json';
+}
+function buildDiagUrl() {
+  return BASE+'?serviceKey='+API_KEY+'&LAWD_CD=11680&DEAL_YMD=202501&numOfRows=1&pageNo=1&_type=json';
+}
+
+var LAWD = {
+  '11':{'강남구':'11680','강동구':'11740','강북구':'11305','강서구':'11500','관악구':'11620','광진구':'11215','구로구':'11530','금천구':'11545','노원구':'11350','도봉구':'11320','동대문구':'11230','동작구':'11590','마포구':'11440','서대문구':'11410','서초구':'11650','성동구':'11200','성북구':'11290','송파구':'11710','양천구':'11470','영등포구':'11560','용산구':'11170','은평구':'11380','종로구':'11110','중구':'11140','중랑구':'11260'},
+  '26':{'강서구':'26440','금정구':'26410','기장군':'26710','남구':'26290','동구':'26170','동래구':'26260','북구':'26330','사상구':'26530','사하구':'26380','서구':'26140','수영구':'26500','연제구':'26470','영도구':'26200','중구':'26110','해운대구':'26350'},
+  '27':{'군위군':'27720','남구':'27290','달서구':'27530','달성군':'27710','동구':'27140','북구':'27230','서구':'27170','수성구':'27260','중구':'27110'},
+  '28':{'강화군':'28710','계양구':'28375','남동구':'28245','동구':'28140','미추홀구':'28177','부평구':'28237','서구':'28260','연수구':'28185','옹진군':'28720','중구':'28110'},
+  '29':{'광산구':'29200','남구':'29155','동구':'29140','북구':'29170','서구':'29110'},
+  '30':{'대덕구':'30230','동구':'30110','서구':'30170','유성구':'30200','중구':'30140'},
+  '31':{'남구':'31140','동구':'31170','북구':'31200','울주군':'31710','중구':'31110'},
+  '36':{'세종시':'36110'},
+  '41':{'가평군':'41820','고양시 덕양구':'41281','고양시 일산동구':'41285','고양시 일산서구':'41287','과천시':'41290','광명시':'41210','광주시':'41610','구리시':'41310','군포시':'41410','김포시':'41570','남양주시':'41360','동두천시':'41250','부천시':'41190','성남시 분당구':'41135','성남시 수정구':'41131','성남시 중원구':'41133','수원시 권선구':'41113','수원시 영통구':'41117','수원시 장안구':'41111','수원시 팔달구':'41115','시흥시':'41390','안산시 단원구':'41273','안산시 상록구':'41271','안성시':'41550','안양시 동안구':'41173','안양시 만안구':'41171','양주시':'41630','양평군':'41830','여주시':'41670','연천군':'41800','오산시':'41370','용인시 기흥구':'41463','용인시 수지구':'41465','용인시 처인구':'41461','의왕시':'41430','의정부시':'41150','이천시':'41500','파주시':'41480','평택시':'41220','포천시':'41650','하남시':'41450','화성시':'41590'},
+  '42':{'강릉시':'42150','고성군':'42820','동해시':'42170','삼척시':'42230','속초시':'42210','양구군':'42800','양양군':'42830','영월군':'42750','원주시':'42130','인제군':'42810','정선군':'42760','철원군':'42780','춘천시':'42110','태백시':'42190','평창군':'42760','홍천군':'42720','화천군':'42790','횡성군':'42730'},
+  '43':{'괴산군':'43760','단양군':'43800','보은군':'43720','영동군':'43740','옥천군':'43730','음성군':'43770','제천시':'43150','증평군':'43745','진천군':'43750','청주시 상당구':'43111','청주시 서원구':'43113','청주시 청원구':'43115','청주시 흥덕구':'43112','충주시':'43130'},
+  '44':{'계룡시':'44250','공주시':'44150','금산군':'44710','논산시':'44230','당진시':'44270','보령시':'44180','부여군':'44760','서산시':'44210','서천군':'44770','아산시':'44200','예산군':'44810','천안시 동남구':'44131','천안시 서북구':'44133','청양군':'44790','태안군':'44825','홍성군':'44800'},
+  '45':{'고창군':'45790','군산시':'45130','김제시':'45210','남원시':'45190','무주군':'45730','부안군':'45800','순창군':'45770','완주군':'45710','익산시':'45140','임실군':'45750','장수군':'45740','전주시 덕진구':'45113','전주시 완산구':'45111','정읍시':'45180','진안군':'45720'},
+  '46':{'강진군':'46810','고흥군':'46770','곡성군':'46720','광양시':'46230','구례군':'46730','나주시':'46170','담양군':'46710','목포시':'46110','무안군':'46840','보성군':'46780','순천시':'46150','신안군':'46910','여수시':'46130','영광군':'46870','영암군':'46830','완도군':'46890','장성군':'46880','장흥군':'46820','진도군':'46900','함평군':'46860','해남군':'46850','화순군':'46790'},
+  '47':{'경산시':'47290','경주시':'47130','고령군':'47830','구미시':'47190','군위군':'47720','김천시':'47140','문경시':'47280','봉화군':'47920','상주시':'47250','성주군':'47840','안동시':'47170','영덕군':'47730','영양군':'47910','영주시':'47210','영천시':'47230','예천군':'47900','울릉군':'47940','울진군':'47930','의성군':'47730','청도군':'47850','청송군':'47870','칠곡군':'47850','포항시 남구':'47113','포항시 북구':'47111'},
+  '48':{'거제시':'48310','거창군':'48880','고성군':'48820','김해시':'48250','남해군':'48850','밀양시':'48270','사천시':'48240','산청군':'48860','양산시':'48330','의령군':'48820','진주시':'48170','창녕군':'48830','창원시 마산합포구':'48125','창원시 마산회원구':'48127','창원시 성산구':'48123','창원시 의창구':'48121','창원시 진해구':'48129','통영시':'48220','하동군':'48840','함안군':'48730','함양군':'48870','합천군':'48890'},
+  '50':{'서귀포시':'50130','제주시':'50110'}
+};
+
+var allData=[], filtered=[];
+var sk='dealDate', sd=-1, pk='pyeong', pd=1, pg=1;
+var PER=30, curTab=1;
+
+// ── 진단 ─────────────────────────────────────────────
+function setDot(id,c){document.getElementById(id+'dot').className='dot '+c;}
+function setMsg(id,m){document.getElementById(id+'msg').textContent=m;}
+
+function runDiag(){
+  var ck=document.getElementById('ckey').value.trim();
+  if(ck) API_KEY=ck;
+  setDot('d1','sp'); setMsg('d1','API 서버 연결 확인 중...');
+  document.getElementById('d2row').style.display='none';
+  document.getElementById('d3row').style.display='none';
+
+  var url=buildDiagUrl();
+  fetch(url)
+    .then(function(r){return r.json();})
+    .then(function(j){
+      setDot('d1','ok'); setMsg('d1','✅ API 서버 연결 성공');
+      document.getElementById('d2row').style.display='flex';
+      setDot('d2','sp'); setMsg('d2','API 키 인증 확인 중...');
+      var rc=j&&j.response&&j.response.header&&j.response.header.resultCode;
+      var rm=j&&j.response&&j.response.header&&j.response.header.resultMsg||'';
+      if(rc && rc!=='00' && rc!=='000'){
+        setDot('d2','fail'); setMsg('d2','❌ 인증 오류 ['+rc+']: '+rm);
+        document.getElementById('dkrow').style.display='flex';
+        return;
+      }
+      setDot('d2','ok'); setMsg('d2','✅ API 키 인증 성공');
+      document.getElementById('d3row').style.display='flex';
+      setDot('d3','sp'); setMsg('d3','데이터 응답 확인 중...');
+      var total=parseInt((j&&j.response&&j.response.body&&j.response.body.totalCount)||'0');
+      if(total>0){
+        setDot('d3','ok'); setMsg('d3','✅ 데이터 정상 수신 (강남구 2025.01: '+total+'건)');
+        setTimeout(function(){document.getElementById('diagBox').style.display='none';},3000);
+      } else {
+        setDot('d3','ok'); setMsg('d3','✅ API 정상 (해당 기간 데이터 없음)');
+      }
+    })
+    .catch(function(e){
+      setDot('d1','fail'); setMsg('d1','❌ 연결 실패: '+e.message);
+      document.getElementById('dkrow').style.display='flex';
+    });
+}
+
+// ── API 호출 ─────────────────────────────────────────
+function callAPI(lawdCd, ym, pageNo){
+  var url=buildUrl(lawdCd, ym, pageNo);
+  return fetch(url).then(function(r){
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(function(j){
+    var rc=j&&j.response&&j.response.header&&j.response.header.resultCode;
+    if(rc && rc!=='00' && rc!=='000') throw new Error(j.response.header.resultMsg||'API 오류 ['+rc+']');
+    var body=j&&j.response&&j.response.body;
+    var total=parseInt((body&&body.totalCount)||'0');
+    if(total===0) return {total:0, rows:[]};
+    var items=(body&&body.items&&body.items.item)||[];
+    if(!Array.isArray(items)) items=[items];
+    var rows=[];
+    for(var i=0;i<items.length;i++){
+      var it=items[i];
+      var area=parseFloat(it.excluUseAr)||0;
+      var priceStr=String(it.dealAmount||'0').replace(/,/g,'').replace(/ /g,'');
+      var price=parseInt(priceStr)||0;
+      if(area<=0||price<=0) continue;
+      rows.push({
+        aptName: String(it.aptNm||'').trim(),
+        area: area,
+        pyeong: Math.round(area*1.25/3.305785),  // 공급면적 기준 (전용×1.25÷3.3058)
+        floor: parseInt(it.floor)||0,
+        price: price,
+        dealDate: it.dealYear+'.'+String(it.dealMonth).padStart(2,'0')+'.'+String(it.dealDay).padStart(2,'0'),
+        buildYear: String(it.buildYear||'-'),
+        dong: String(it.umdNm||'').trim(),
+        lawdCd: lawdCd
+      });
+    }
+    return {total:total, rows:rows};
+  });
+}
+
+function fetchAll(lawdCd, ym){
+  return callAPI(lawdCd, ym, 1).then(function(res){
+    var total=res.total, rows=res.rows;
+    if(total<=1000) return rows;
+    var pages=Math.ceil(total/1000);
+    var promises=[];
+    for(var p=2;p<=pages;p++){
+      promises.push(callAPI(lawdCd,ym,p).then(function(r){return r.rows;}).catch(function(){return [];}));
+    }
+    return Promise.all(promises).then(function(extras){
+      extras.forEach(function(ex){rows=rows.concat(ex);});
+      return rows;
+    });
+  });
+}
+
+// ── 지역 ────────────────────────────────────────────
+function loadSgg(){
+  var sido=document.getElementById('sido').value;
+  var wrap=document.getElementById('sggW');
+  var sel=document.getElementById('sgg');
+  sel.innerHTML='<option value="">전체</option>';
+  if(sido&&LAWD[sido]){
+    Object.keys(LAWD[sido]).forEach(function(n){
+      sel.innerHTML+='<option value="'+n+'">'+n+'</option>';
+    });
+    wrap.style.display='';
+  } else { wrap.style.display='none'; }
+}
+
+function getLawdCodes(sido, sg){
+  var m=LAWD[sido]||{};
+  if(sg&&m[sg]) return [m[sg]];
+  return Object.values(m);
+}
+
+function getMonths(s,e){
+  var r=[];
+  var parts=s.split('-'); var sy=parseInt(parts[0]),sm=parseInt(parts[1]);
+  var eparts=e.split('-'); var ey=parseInt(eparts[0]),em=parseInt(eparts[1]);
+  while(sy<ey||(sy===ey&&sm<=em)){
+    r.push(''+sy+(sm<10?'0':'')+sm);
+    sm++; if(sm>12){sm=1;sy++;}
+  }
+  return r;
+}
+
+// ── 메인 조회 ────────────────────────────────────────
+function doSearch(){
+  var sido=document.getElementById('sido').value;
+  var sg=document.getElementById('sgg').value;
+  var sYM=document.getElementById('sYM').value;
+  var eYM=document.getElementById('eYM').value;
+  if(!sido){showErr('시도를 선택해주세요.');return;}
+  if(!sYM||!eYM){showErr('조회 기간을 입력해주세요.');return;}
+  if(sYM>eYM){showErr('시작 년월이 종료 년월보다 늦습니다.');return;}
+  var months=getMonths(sYM,eYM);
+  if(months.length>36){showErr('최대 36개월까지 조회 가능합니다.');return;}
+  showErr('');
+  var codes=getLawdCodes(sido,sg);
+  if(!codes.length){showErr('지역 코드를 찾을 수 없습니다.');return;}
+
+  document.getElementById('searchBtn').disabled=true;
+  document.getElementById('spin').classList.add('on');
+  document.getElementById('sr').style.display='none';
+  document.getElementById('tout').style.display='none';
+  allData=[];
+
+  var total=codes.length*months.length, done=0, errCnt=0, lastErr='';
+  var tasks=[];
+  codes.forEach(function(cd){
+    months.forEach(function(ym){
+      tasks.push(fetchAll(cd,ym).then(function(rows){
+        allData=allData.concat(rows);
+        done++;
+        setStat('수집 중... '+done+'/'+total+' ('+allData.length.toLocaleString()+'건)');
+      }).catch(function(e){
+        errCnt++; lastErr=e.message; done++;
+        setStat('수집 중... '+done+'/'+total+' ('+allData.length.toLocaleString()+'건)');
+      }));
+    });
+  });
+
+  Promise.all(tasks).then(function(){
+    document.getElementById('searchBtn').disabled=false;
+    document.getElementById('spin').classList.remove('on');
+    if(errCnt>0&&allData.length===0){showErr('조회 실패: '+lastErr);setStat('조회 실패');return;}
+    if(errCnt>0) showErr('일부('+errCnt+'건) 오류: '+lastErr);
+    if(allData.length===0){setStat('조회된 데이터가 없습니다.');return;}
+    applyFilter();
+  });
+}
+
+function applyFilter(){
+  var minA=parseFloat(document.getElementById('minA').value)||0;
+  var maxA=parseFloat(document.getElementById('maxA').value)||Infinity;
+  var minP=parseInt(document.getElementById('minP').value)||0;
+  var maxP=parseInt(document.getElementById('maxP').value)||Infinity;
+  var kw=document.getElementById('aptKw').value.trim();
+  filtered=allData.filter(function(r){
+    return r.area>=minA&&r.area<=maxA&&r.price>=minP&&r.price<=maxP&&(!kw||r.aptName.indexOf(kw)>=0);
+  });
+  if(!filtered.length){setStat('필터 조건에 맞는 데이터가 없습니다.');return;}
+  renderStats(); pg=1; qpg=1; showTab(1);
+  setStat('총 '+filtered.length.toLocaleString()+'건 조회 완료 (수집 '+allData.length.toLocaleString()+'건)');
+}
+
+// ── 통계 ────────────────────────────────────────────
+function renderStats(){
+  var ps=filtered.map(function(r){return r.price;});
+  var mx=Math.max.apply(null,ps), mn=Math.min.apply(null,ps);
+  var av=Math.round(ps.reduce(function(a,b){return a+b;},0)/ps.length);
+  var pySet={};filtered.forEach(function(r){pySet[r.pyeong]=1;});
+  document.getElementById('sv1').textContent=filtered.length.toLocaleString()+'건';
+  document.getElementById('sv2').textContent=fmt(av);
+  document.getElementById('sv3').textContent=fmt(mx);
+  document.getElementById('sv4').textContent=fmt(mn);
+  document.getElementById('sv5').textContent=fmt(mx-mn);
+  document.getElementById('sv6').textContent=Object.keys(pySet).length+'종';
+  document.getElementById('sr').style.display='';
+}
+
+// ── 탭 ─────────────────────────────────────────────
+function showTab(t){
+  curTab=t;
+  document.getElementById('t1').style.display=t===1?'':'none';
+  document.getElementById('t2').style.display=t===2?'':'none';
+  document.getElementById('tb1').classList.toggle('on',t===1);
+  document.getElementById('tb2').classList.toggle('on',t===2);
+  document.getElementById('tout').style.display='';
+  if(t===1) render3();
+  if(t===2) render1_inner();
+}
+
+// ── 거래내역 ─────────────────────────────────────────
+function s1(k){if(sk===k)sd*=-1;else{sk=k;sd=-1;}pg=1;render1_inner();}
+function render1_inner(){
+  var ks=['dealDate','aptName','dong','area','pyeong','floor','price','buildYear'];
+  for(var i=0;i<8;i++){var el=document.getElementById('h'+i);if(el)el.className=sk===ks[i]?'S':'';}
+  var sorted=filtered.slice().sort(function(a,b){
+    var av=a[sk],bv=b[sk];
+    if(typeof av==='number') return (av-bv)*sd;
+    return String(av).localeCompare(String(bv),'ko')*sd;
+  });
+  var s=(pg-1)*PER;
+  var html='';
+  sorted.slice(s,s+PER).forEach(function(r){
+    var naverQ=encodeURIComponent(r.aptName+' '+r.dong);
+    var naverUrl='https://map.naver.com/v5/search/'+naverQ;
+    html+='<tr><td class="n">'+r.dealDate+'</td>'
+      +'<td><a class="apt-link" href="'+naverUrl+'" target="_blank">'+r.aptName+'<span class="naver-ico">🗺</span></a></td>'
+      +'<td>'+r.dong+'</td>'
+      +'<td class="n">'+r.area.toFixed(2)+'</td><td class="py">'+r.pyeong+'평</td>'
+      +'<td class="n">'+r.floor+'층</td><td class="p">'+r.price.toLocaleString()+'</td>'
+      +'<td class="n">'+r.buildYear+'</td></tr>';
+  });
+  document.getElementById('tb2b').innerHTML=html;
+  document.getElementById('cb2').textContent=filtered.length.toLocaleString()+'건';
+  renderPg2(sorted.length);
+}
+function renderPg2(total){
+  var tp=Math.ceil(total/PER), el=document.getElementById('pg2');
+  if(tp<=1){el.innerHTML='';return;}
+  var h='', s=Math.max(1,pg-4), e=Math.min(tp,pg+4);
+  if(pg>1) h+='<button class="pb" onclick="gp(1)">«</button><button class="pb" onclick="gp('+(pg-1)+')">‹</button>';
+  for(var i=s;i<=e;i++) h+='<button class="pb'+(i===pg?' on':'')+'" onclick="gp('+i+')">'+i+'</button>';
+  if(pg<tp) h+='<button class="pb" onclick="gp('+(pg+1)+')">›</button><button class="pb" onclick="gp('+tp+')">»</button>';
+  el.innerHTML=h;
+}
+function gp(p){pg=p;render1_inner();document.getElementById('tout').scrollIntoView({behavior:'smooth'});}
+
+// ── 평형별 분석 ──────────────────────────────────────
+function s2(k){if(pk===k)pd*=-1;else{pk=k;pd=k==='pyeong'?1:-1;}render2();}
+function render2(){
+  var grp={};
+  filtered.forEach(function(r){
+    var k=r.pyeong;
+    if(!grp[k]) grp[k]={pyeong:k,areas:[],prices:[]};
+    grp[k].areas.push(r.area);
+    grp[k].prices.push(r.price);
+  });
+  var rows=Object.values(grp).map(function(g){
+    var mn=Math.min.apply(null,g.prices), mx=Math.max.apply(null,g.prices);
+    var av=Math.round(g.prices.reduce(function(a,b){return a+b;},0)/g.prices.length);
+    var am=Math.min.apply(null,g.areas).toFixed(1), ax=Math.max.apply(null,g.areas).toFixed(1);
+    return {pyeong:g.pyeong, aRange:am===ax?am+'㎡':am+'~'+ax+'㎡',
+      cnt:g.prices.length, min:mn, max:mx, avg:av,
+      diff:mx-mn, diffPct:mn>0?parseFloat(((mx-mn)/mn*100).toFixed(1)):0};
+  });
+  rows.sort(function(a,b){
+    return (typeof a[pk]==='number'?a[pk]-b[pk]:String(a[pk]).localeCompare(String(b[pk])))*pd;
+  });
+  var pks=['pyeong','cnt','avg','min','max','diff','diffPct'];
+  for(var i=0;i<7;i++){var el=document.getElementById('p'+i);if(el)el.className=pk===pks[i]?'S':'';}
+  var html='';
+  rows.forEach(function(r){
+    html+='<tr><td class="py">'+r.pyeong+'평 <span class="pr">'+r.aRange+'</span></td>'
+      +'<td class="ct">'+r.cnt.toLocaleString()+'</td>'
+      +'<td class="p">'+fmt(r.avg)+'</td>'
+      +'<td class="mn">'+fmt(r.min)+'</td>'
+      +'<td class="mx">'+fmt(r.max)+'</td>'
+      +'<td class="df">'+fmt(r.diff)+'</td>'
+      +'<td class="n">'+r.diffPct+'%</td></tr>';
+  });
+  document.getElementById('tb2b').innerHTML=html;
+  document.getElementById('cb2').textContent=rows.length+'개 평형';
+}
+
+// ── 단지별 평형 분석 ─────────────────────────────────
+var qk='aptName', qd=1, qpg=1;
+function s3(k){if(qk===k)qd*=-1;else{qk=k;qd=k==='aptName'||k==='dong'?1:-1;}qpg=1;render3();}
+function render3(){
+  // 단지명+평형 기준으로 그룹핑
+  var grp={};
+  filtered.forEach(function(r){
+    var key=r.aptName+'__'+r.pyeong;
+    if(!grp[key]) grp[key]={aptName:r.aptName, dong:r.dong, pyeong:r.pyeong, area:r.area, prices:[], lawdCd:r.lawdCd};
+    grp[key].prices.push(r.price);
+  });
+  var rows=Object.values(grp).map(function(g){
+    var mn=Math.min.apply(null,g.prices), mx=Math.max.apply(null,g.prices);
+    var av=Math.round(g.prices.reduce(function(a,b){return a+b;},0)/g.prices.length);
+    return {aptName:g.aptName, dong:g.dong, pyeong:g.pyeong, area:g.area,
+      cnt:g.prices.length, min:mn, max:mx, avg:av,
+      diff:mx-mn, diffPct:mn>0?parseFloat(((mx-mn)/mn*100).toFixed(1)):0};
+  });
+  rows.sort(function(a,b){
+    var av=a[qk], bv=b[qk];
+    if(typeof av==='number') return (av-bv)*qd;
+    return String(av).localeCompare(String(bv),'ko')*qd;
+  });
+  var qks=['aptName','dong','pyeong','cnt','min','max','diff','diffPct','avg'];
+  for(var i=0;i<9;i++){var el=document.getElementById('q'+i);if(el)el.className=qk===qks[i]?'S':'';}
+  var s=(qpg-1)*PER;
+  var html='';
+  rows.slice(s,s+PER).forEach(function(r){
+    var naverQ=encodeURIComponent(r.aptName+' '+r.dong);
+    var naverUrl='https://map.naver.com/v5/search/'+naverQ;
+    html+='<tr>'
+      +'<td><a class="apt-link" href="'+naverUrl+'" target="_blank">'+r.aptName+'<span class="naver-ico">🗺</span></a></td>'
+      +'<td>'+r.dong+'</td>'
+      +'<td class="py">'+r.pyeong+'평</td>'
+      +'<td class="ct">'+r.cnt+'</td>'
+      +'<td class="mn">'+fmt(r.min)+'</td>'
+      +'<td class="mx">'+fmt(r.max)+'</td>'
+      +'<td class="df">'+fmt(r.diff)+'</td>'
+      +'<td class="n">'+r.diffPct+'%</td>'
+      +'<td class="p">'+fmt(r.avg)+'</td>'
+      +'</tr>';
+  });
+  document.getElementById('tb3b').innerHTML=html||'<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--mu)">데이터 없음</td></tr>';
+  document.getElementById('cb1').textContent=rows.length+'개 단지·평형';
+  renderPg3(rows.length);
+}
+function renderPg3(total){
+  var tp=Math.ceil(total/PER), el=document.getElementById('pg3');
+  if(tp<=1){el.innerHTML='';return;}
+  var h='', s=Math.max(1,qpg-4), e=Math.min(tp,qpg+4);
+  if(qpg>1) h+='<button class="pb" onclick="gp3(1)">«</button><button class="pb" onclick="gp3('+(qpg-1)+')">‹</button>';
+  for(var i=s;i<=e;i++) h+='<button class="pb'+(i===qpg?' on':'')+'" onclick="gp3('+i+')">'+i+'</button>';
+  if(qpg<tp) h+='<button class="pb" onclick="gp3('+(qpg+1)+')">›</button><button class="pb" onclick="gp3('+tp+')">»</button>';
+  el.innerHTML=h;
+}
+function gp3(p){qpg=p;render3();document.getElementById('tout').scrollIntoView({behavior:'smooth'});}
+
+// ── 유틸 ────────────────────────────────────────────
+function fmt(v){
+  if(v>=10000){var e=Math.floor(v/10000),r=v%10000;return r>0?e+'억 '+r.toLocaleString()+'만':e+'억';}
+  return v.toLocaleString()+'만';
+}
+function setStat(m){document.getElementById('stxt').textContent=m;}
+function showErr(m){var el=document.getElementById('emsg');el.textContent=m;el.style.display=m?'':'none';}
+function resetAll(){
+  document.getElementById('sido').value='';
+  document.getElementById('sgg').innerHTML='<option value="">전체</option>';
+  document.getElementById('sggW').style.display='none';
+  document.getElementById('sYM').value='';
+  document.getElementById('eYM').value='';
+  ['minA','maxA','minP','maxP','aptKw'].forEach(function(id){document.getElementById(id).value='';});
+  allData=[];filtered=[];
+  document.getElementById('sr').style.display='none';
+  document.getElementById('tout').style.display='none';
+  showErr('');setStat('조회 조건을 입력하고 조회하기를 클릭하세요.');
+}
+
+window.onload=function(){
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+(now.getMonth()<9?'0':'')+(now.getMonth()+1);
+  var prev=new Date(now.getFullYear(),now.getMonth()-2,1);
+  var yp=prev.getFullYear()+'-'+(prev.getMonth()<9?'0':'')+(prev.getMonth()+1);
+  document.getElementById('sYM').value=yp;
+  document.getElementById('eYM').value=ym;
+  if(!API_KEY){
+    showKeyModal();
+  } else {
+    runDiag();
+  }
+};
+
+function showKeyModal(){
+  var m=document.getElementById('keyModal');
+  m.style.display='flex';
+  var saved=localStorage.getItem('apt_api_key')||'';
+  document.getElementById('modalKey').value=saved;
+  document.getElementById('modalErr').style.display='none';
+}
+
+function saveKey(){
+  var key=document.getElementById('modalKey').value.trim();
+  if(!key){
+    document.getElementById('modalErr').textContent='API 키를 입력해주세요.';
+    document.getElementById('modalErr').style.display='';
+    return;
+  }
+  localStorage.setItem('apt_api_key', key);
+  API_KEY=key;
+  document.getElementById('keyModal').style.display='none';
+  runDiag();
+}
+
+function clearKey(){
+  if(!confirm('저장된 API 키를 삭제하시겠습니까?')) return;
+  localStorage.removeItem('apt_api_key');
+  API_KEY='';
+  showKeyModal();
+}
+
+// 엔터키로 저장
+document.addEventListener('keydown', function(e){
+  if(e.key==='Enter' && document.getElementById('keyModal').style.display==='flex'){
+    saveKey();
+  }
+});
+</script>
+</body>
+</html>
