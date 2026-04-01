@@ -217,6 +217,17 @@ td.ct{color:var(--dm);font-family:'JetBrains Mono',monospace;text-align:right;}
 var API_KEY = localStorage.getItem('apt_api_key') || '';
 var BASE = 'https://apis.data.go.kr/1613000/RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade';
 // CORS 우회: 브라우저에서 직접 호출시 csp_report/CORS 오류 발생 → 프록시 경유
+// 모바일 감지 후 네이버부동산 URL 분기
+function naverLandUrl(aptName, dong) {
+  var q = encodeURIComponent(aptName + ' ' + dong);
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if(isMobile) {
+    return 'https://m.land.naver.com/search/result?query=' + q;
+  } else {
+    return 'https://land.naver.com/search/search.naver?query=' + q;
+  }
+}
+
 function buildUrl(lawdCd, ym, pageNo) {
   return BASE+'?serviceKey='+API_KEY+'&LAWD_CD='+lawdCd+'&DEAL_YMD='+ym+'&numOfRows=1000&pageNo='+pageNo+'&_type=json';
 }
@@ -450,8 +461,7 @@ function render1_inner(){
   var s=(pg-1)*PER;
   var html='';
   sorted.slice(s,s+PER).forEach(function(r){
-    var naverQ=encodeURIComponent(r.aptName+' '+r.dong);
-    var naverUrl='https://land.naver.com/search/search.naver?query='+naverQ;
+    var naverUrl=naverLandUrl(r.aptName, r.dong);
     html+='<tr><td class="n">'+r.dealDate+'</td>'
       +'<td><a class="apt-link" href="'+naverUrl+'" target="_blank">'+r.aptName+'<span class="naver-ico">🏠</span></a></td>'
       +'<td>'+r.dong+'</td>'
@@ -539,8 +549,7 @@ function render3(){
   var s=(qpg-1)*PER;
   var html='';
   rows.slice(s,s+PER).forEach(function(r){
-    var naverQ=encodeURIComponent(r.aptName+' '+r.dong);
-    var naverUrl='https://land.naver.com/search/search.naver?query='+naverQ;
+    var naverUrl=naverLandUrl(r.aptName, r.dong);
     html+='<tr>'
       +'<td><a class="apt-link" href="'+naverUrl+'" target="_blank">'+r.aptName+'<span class="naver-ico">🏠</span></a></td>'
       +'<td>'+r.dong+'</td>'
