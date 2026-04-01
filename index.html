@@ -277,12 +277,9 @@ function runDiag(){
       document.getElementById('d3row').style.display='flex';
       setDot('d3','sp'); setMsg('d3','데이터 응답 확인 중...');
       var total=parseInt((j&&j.response&&j.response.body&&j.response.body.totalCount)||'0');
-      if(total>0){
-        setDot('d3','ok'); setMsg('d3','✅ 데이터 정상 수신 (강남구 2025.01: '+total+'건)');
-        setTimeout(function(){document.getElementById('diagBox').style.display='none';},3000);
-      } else {
-        setDot('d3','ok'); setMsg('d3','✅ API 정상 (해당 기간 데이터 없음)');
-      }
+      setDot('d3','ok');
+      setMsg('d3', total>0 ? '✅ 정상 (강남구 2025.01: '+total+'건)' : '✅ API 정상');
+      setTimeout(function(){document.getElementById('diagBox').style.display='none';},2000);
     })
     .catch(function(e){
       setDot('d1','fail'); setMsg('d1','❌ 연결 실패: '+e.message);
@@ -475,9 +472,9 @@ function render1_inner(){
   var html='';
   sorted.slice(s,s+PER).forEach(function(r){
     var naverQ=encodeURIComponent(r.aptName+' '+r.dong);
-    var naverUrl='https://map.naver.com/v5/search/'+naverQ;
+    var naverUrl='https://land.naver.com/search/search.naver?query='+naverQ;
     html+='<tr><td class="n">'+r.dealDate+'</td>'
-      +'<td><a class="apt-link" href="'+naverUrl+'" target="_blank">'+r.aptName+'<span class="naver-ico">🗺</span></a></td>'
+      +'<td><a class="apt-link" href="'+naverUrl+'" target="_blank">'+r.aptName+'<span class="naver-ico">🏠</span></a></td>'
       +'<td>'+r.dong+'</td>'
       +'<td class="n">'+r.area.toFixed(2)+'</td><td class="py">'+r.pyeong+'평</td>'
       +'<td class="n">'+r.floor+'층</td><td class="p">'+r.price.toLocaleString()+'</td>'
@@ -564,9 +561,9 @@ function render3(){
   var html='';
   rows.slice(s,s+PER).forEach(function(r){
     var naverQ=encodeURIComponent(r.aptName+' '+r.dong);
-    var naverUrl='https://map.naver.com/v5/search/'+naverQ;
+    var naverUrl='https://land.naver.com/search/search.naver?query='+naverQ;
     html+='<tr>'
-      +'<td><a class="apt-link" href="'+naverUrl+'" target="_blank">'+r.aptName+'<span class="naver-ico">🗺</span></a></td>'
+      +'<td><a class="apt-link" href="'+naverUrl+'" target="_blank">'+r.aptName+'<span class="naver-ico">🏠</span></a></td>'
       +'<td>'+r.dong+'</td>'
       +'<td class="py">'+r.pyeong+'평</td>'
       +'<td class="ct">'+r.cnt+'</td>'
