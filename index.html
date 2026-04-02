@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>아파트 실거래가 조회</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -216,15 +216,14 @@ td.ct{color:var(--dm);font-family:'JetBrains Mono',monospace;text-align:right;}
 <script>
 var API_KEY = localStorage.getItem('apt_api_key') || '';
 var BASE = 'https://apis.data.go.kr/1613000/RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade';
-// CORS 우회: 브라우저에서 직접 호출시 csp_report/CORS 오류 발생 → 프록시 경유
-// 모바일 감지 후 네이버부동산 URL 분기
-function naverLandUrl(aptName, dong) {
+// 모바일/PC 감지 후 네이버지도 URL 분기
+function naverMapUrl(aptName, dong) {
   var q = encodeURIComponent(aptName + ' ' + dong);
   var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   if(isMobile) {
-    return 'https://m.land.naver.com/search/result?query=' + q;
+    return 'https://m.map.naver.com/search2/search.naver?query=' + q;
   } else {
-    return 'https://land.naver.com/search/search.naver?query=' + q;
+    return 'https://map.naver.com/v5/search/' + q;
   }
 }
 
@@ -461,7 +460,7 @@ function render1_inner(){
   var s=(pg-1)*PER;
   var html='';
   sorted.slice(s,s+PER).forEach(function(r){
-    var naverUrl=naverLandUrl(r.aptName, r.dong);
+    var naverUrl=naverMapUrl(r.aptName, r.dong);
     html+='<tr><td class="n">'+r.dealDate+'</td>'
       +'<td><a class="apt-link" href="'+naverUrl+'" target="_blank">'+r.aptName+'<span class="naver-ico">🏠</span></a></td>'
       +'<td>'+r.dong+'</td>'
@@ -549,7 +548,7 @@ function render3(){
   var s=(qpg-1)*PER;
   var html='';
   rows.slice(s,s+PER).forEach(function(r){
-    var naverUrl=naverLandUrl(r.aptName, r.dong);
+    var naverUrl=naverMapUrl(r.aptName, r.dong);
     html+='<tr>'
       +'<td><a class="apt-link" href="'+naverUrl+'" target="_blank">'+r.aptName+'<span class="naver-ico">🏠</span></a></td>'
       +'<td>'+r.dong+'</td>'
